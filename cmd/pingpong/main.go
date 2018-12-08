@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -11,6 +12,10 @@ type ball struct{}
 func main(){
 	var b ball
 	var wg sync.WaitGroup
+
+	fmt.Println("threads -> ", runtime.GOMAXPROCS(0))
+	fmt.Println("threads -> ", runtime.GOMAXPROCS(1))
+	fmt.Println("threads -> ", runtime.GOMAXPROCS(0))
 
 	table := make(chan ball)
 
@@ -24,7 +29,7 @@ func main(){
 
 	table <- b
 
-	time.Sleep(time.Second)
+	time.Sleep(5*time.Millisecond)
 	fmt.Println("Stop the game. take a ball")
 	<-table
 	fmt.Println("close table")
