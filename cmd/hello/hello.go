@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 )
 
 // Greeter greets someone by name
@@ -26,26 +26,22 @@ func (p SuffixGreeter) Greet(name string) {
 	fmt.Println(name,"hello")
 }
 
+var greeterType = flag.String("greeter","suffix","type of the greeter")
 
 func main() {
-	var op, name string
+	flag.Parse()
 
-	if len (os.Args)>=2{
-		op = os.Args[1]
-	}
-	if len(os.Args)>=3 {
-		op = os.Args[2]
-	}
+
 	var g Greeter
-	switch op {
+	switch *greeterType {
 	case "prefix":
 		g = PrefixGreeter{}
 	case "suffix":
 		g = SuffixGreeter{}
 	default:
-		fmt.Printf("unexpected greeter[%s]\n",op)
+		fmt.Printf("unexpected greeter\n")
 		return
 	}
 
-	g.Greet(name)
+	g.Greet("world")
 }
