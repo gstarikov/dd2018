@@ -47,7 +47,29 @@ type IndexPage struct {
 	Messages []Message
 }
 
-const indexText = `asd`
+const indexText = `
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>{{.Title}}</title>
+	</head>
+	<body>
+		<form method="post" action="/">
+			<input type="text" name="user"/>
+			<textarea name="message"></textarea>
+			<input type="submit" value="post!"/>
+		</form>
+		{{range .Messages}}
+			<p>
+				<div><strong>{{ .User }}</strong></div>
+				<div>{{ .Text }}</div>
+			</p>
+		{{else}}
+			<div><strong>no posts yet</strong></div>
+		{{end}}
+	</body>
+</html>`
 
 var index = template.Must(template.New("index").Parse(indexText))
 
@@ -84,9 +106,21 @@ func main() {
 			}
 
 		}
+	//	ms, err := st.List(context.TODO())
+	//	if err != nil {
+	//		res.WriteHeader(http.StatusInternalServerError)
+	//		return
+	//	}
+		page := IndexPage{
+			Title:    "my-cool-guestbook",
+			//Messages: ms,
+		}
+		if err := index.Execute(res, page); err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-
-		io.WriteString(res,"ehlo")
+		//io.WriteString(res,"ehlo")
 	})
 	http.ListenAndServe(*addr,nil)
 }

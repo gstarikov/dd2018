@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"math/rand"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -52,24 +54,30 @@ func fileWriter(res chan<- error, i, m int) {
 		return
 	}
 	defer file.Close()
-	err = writeRandNumbersToFile(file, m)
-	res <- err
-}
-
-func writeRandNumbersToFile(file *os.File, m int) error {
 	for j := 0; j < m; j++ {
-		bts := randNumberBytes()
-		if _, err := file.Write(bts); err != nil {
-			return err
+		if _, err = writeRandNumbersToFile(file); err!= nil {
+			res <- err
+			return
 		}
 	}
-	return nil
+	res <- nil
 }
 
-func randNumberBytes() []byte {
+func writeRandNumbersToFile(w io.Writer) (int, error) {
 	v := rand.Uint64()
-	bts := make([]byte, 0, max+1) // 8 is for uint64; 1 is for '\n'.
-	bts = strconv.AppendUint(nil, v, 10)
-	bts = append(bts, '\n')
-	return bts
+	//bts := make([]byte, 0, max+1) // 8 is for uint64; 1 is for '\n'.
+	bts := pool.Get().(*[]byte)
+	defer pool.Put(bts)
+
+	p := *bts
+	p = strconv.AppendUint(p, v, 10)
+	p = append(p, '\n')
+	return w.Write(p)
+}
+
+var pool=sync.Pool {
+	New: func()interface{}{
+		p := make([]byte,0,max+1)
+		return &p
+	},
 }
